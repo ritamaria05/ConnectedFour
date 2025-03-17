@@ -10,21 +10,7 @@ column, or diagonal. A game of Connect Four can end in a draw, i.e., in a
 state where all 42 tokens have been used, the grid is full, but there are not four tokens of either colour
 aligned in any direction at any location.
 
-The interface for the game can be something like this:
--------
--------
--------
--------
-X--O-XO
-X-OXOXO
-(this might not be formatted correctly)
-It is now X’s turn.
-Make a move by choosing your coordinates to play.
 
-After X makes a move, the computer takes this new board with X move added and uses one of the
-two algorithms to be implemented. When the computer finishes choosing the best move among the
-possible ones, it will then exhibit a new board with the computer’s move (in this case a new ’O’ will
-show in the position chosen by your program), and wait for the human to play.
 Our implementation will  support the following three game scenarios:
 1. human vs. human
 2. human vs. computer
