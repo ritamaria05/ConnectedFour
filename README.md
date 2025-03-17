@@ -10,14 +10,14 @@ column, or diagonal. A game of Connect Four can end in a draw, i.e., in a
 state where all 42 tokens have been used, the grid is full, but there are not four tokens of either colour
 aligned in any direction at any location.
 
-The interface for the game can be something like this (spaces are only used here for better understanding, not in the final code):
-- - - - - - -
-- - - - - - -
-- - - - - - -
-- - - - - - -
-X - - O - X O
-X - O X O X O
-
+The interface for the game can be something like this:
+-------
+-------
+-------
+-------
+X--O-XO
+X-OXOXO
+(this might not be formatted correctly)
 It is now X’s turn.
 Make a move by choosing your coordinates to play.
 
