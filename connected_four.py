@@ -25,3 +25,36 @@ def is_valid(board,col):
 def drop_piece(board, row, col, piece):
     board[row][col] = piece
 
+def check_win(board, piece):
+    # Verificação horizontal
+    for row in range(6):
+        for col in range(7 - 3):
+            if board[row][col] == piece and board[row][col+1] == piece and \
+               board[row][col+2] == piece and board[row][col+3] == piece:
+                return True
+
+    # Verificação vertical
+    for col in range(7):
+        for row in range(6 - 3):
+            if board[row][col] == piece and board[row+1][col] == piece and \
+               board[row+2][col] == piece and board[row+3][col] == piece:
+                return True
+
+    # Verifica a diagonal secundária
+    for row in range(3, 6):
+        for col in range(7 - 3):
+            if board[row][col] == piece and board[row-1][col+1] == piece and \
+               board[row-2][col+2] == piece and board[row-3][col+3] == piece:
+                return True
+
+    # Verifica a diagonal principal
+    for l in range(6 - 3):
+        for c in range(7 - 3):
+            if board[row][col] == piece and board[row+1][col+1] == piece and \
+               board[row+2][col+2] == piece and board[row+3][col+3] == piece:
+                return True
+
+    return False
+
+def switch_player(current):
+    return 'O' if current == 'X' else 'X'
