@@ -10,11 +10,11 @@ def create_board():
 
 # função para exibir o tabuleiro no terminal de maneira mais bonitinha
 def print_board(board):
-    print(" 0  1  2  3  4  5  6")
-    print("---------------------")
+    print(" 0 1 2 3 4 5 6")
+    print("---------------")
     for row in reversed(board):
         print("|" + "|".join(f"{cell if cell != 0 else ' '}" for cell in row) + "|")
-    print("---------------------")
+    print("---------------")
 
 # verifica se a jogada é válida (entre 0 e 6)
 def is_valid(board,col):
