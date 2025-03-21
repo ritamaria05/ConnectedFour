@@ -1,5 +1,5 @@
 import math
-
+# from mcts import ... usar as funções para implementar mcts aqui
 ROW_COUNT = 6
 CLUMN_COUNT = 7
 

@@ -1,6 +1,6 @@
 import math
 import random
-
+from connected_four import create_board, is_valid, drop_piece, check_win
 # Inicializa um nó da árvore MCTS
 class Node:
     def __init__(self, state, parent=None):
@@ -82,19 +82,20 @@ def select(self):
 #simula uma partida a partir do estado atual até ao terminal
 #retorna o valor da recomepnsa para o jogador atual com base no resultado da simulação
 def simulate(self):
-    current_state = [row[:]for row in self.state]
-    current_player = 1
-    while True:
-        possible_moves = self.get_possible_moves()
-        if not possible_moves:
-            return 0 # empate
-        move = random.choice(possible_moves)
-        current_state = move
+        board = [row[:] for row in self.state]  # Copia o tabuleiro
+        current_player = 'X'
 
-        if self.check_winner(current_state,current_player):
-            return 1 if current_player==1 else -1 # vitoria do jogador atual (1)
-        
-        current_player = 3 - current_player # alterna entre players 1 e 2
+        while True:
+            possible_moves = [col for col in range(7) if is_valid(board, col)]
+            if not possible_moves:
+                return 0  # Empate
 
-# simulate precisa de dados do codigo connected_four.py
-# editar depois
+            col = random.choice(possible_moves)
+            row = next(r for r in range(6) if board[r][col] == 0)
+            drop_piece(board, row, col, current_player)
+
+            if check_win(board, current_player):
+                return 1 if current_player == 'X' else -1  # Vitória do jogador
+
+            current_player = 'O' if current_player == 'X' else 'X'
+
