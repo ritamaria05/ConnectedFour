@@ -107,10 +107,10 @@ def play_game_with_mcts():
             try:
                 col = int(input("Jogador X, escolha uma coluna (0-6): "))
             except ValueError:
-                print("Entrada inválida. Digite um número entre 0 e 6.")
+                print("Jogada inválida. Digite um número entre 0 e 6.")
                 continue
         else:
-            print("IA está pensando...")
+            print("IA está a pensar...")
             col = mcts_decision(board, iterations=1000)
             print(f"IA escolheu a coluna {col}")
 
@@ -132,6 +132,47 @@ def play_game_with_mcts():
         else:
             turn = switch_player(turn)
 
+def play_game_mcts_vs_mcts():
+    from mcts import mcts_decision  # Importa a função MCTS
+    board = create_board()
+    game_over = False
+    turn = "X"  # Começa com "X"
+
+    while not game_over:
+        print_board(board)
+        print(f"IA ({turn}) está a pensar...")
+
+        # MCTS decide o movimento para o jogador atual
+        col = mcts_decision(board, iterations=10000)
+        print(f"IA ({turn}) escolheu a coluna {col}")
+
+        if col < 0 or col >= COLUMN_COUNT or not is_valid(board, col):
+            print("Jogada inválida. Isso não deveria acontecer! Reiniciando jogada.")
+            continue
+
+        row = next(r for r in range(6) if board[r][col] == 0)
+        drop_piece(board, row, col, turn)
+
+        if check_win(board, turn):
+            print_board(board)
+            print(f"A IA ({turn}) venceu!")
+            game_over = True
+        elif is_draw(board):
+            print_board(board)
+            print("Empate!")
+            game_over = True
+        else:
+            turn = switch_player(turn)
+
 if __name__ == "__main__":
-    # Para jogar contra a IA utilizando o MCTS, execute a função abaixo:
-    play_game_with_mcts()
+    print("Escolha um modo de jogo: \n 1: Jogador vs Jogador \n 2: Jogador vs Computador \n 3: Computador vs. Computador ")
+    mode = int(input("Modo: "))
+    if(mode==1):
+        play_game()
+    elif(mode==2):
+        # Para jogar contra a IA utilizando o MCTS, execute a função abaixo:
+        play_game_with_mcts()
+    elif(mode==3):
+        play_game_mcts_vs_mcts()
+    else:
+        print("Modo de jogo inválido. Digite um número de 1 a 3: ")
