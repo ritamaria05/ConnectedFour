@@ -111,7 +111,7 @@ def play_game_with_mcts():
                 continue
         else:
             print("IA está a pensar...")
-            col = mcts_decision(board, iterations=1000)
+            col = mcts_decision(board, iterations=80000)
             print(f"IA escolheu a coluna {col}")
 
         if col < 0 or col >= COLUMN_COUNT or not is_valid(board, col):
@@ -143,7 +143,7 @@ def play_game_mcts_vs_mcts():
         print(f"IA ({turn}) está a pensar...")
 
         # MCTS decide o movimento para o jogador atual
-        col = mcts_decision(board, iterations=10000)
+        col = mcts_decision(board, iterations=80000)
         print(f"IA ({turn}) escolheu a coluna {col}")
 
         if col < 0 or col >= COLUMN_COUNT or not is_valid(board, col):

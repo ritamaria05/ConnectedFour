@@ -71,7 +71,7 @@ class Node:
         if self.parent:
             self.parent.backpropagate(reward)
 
-def mcts_decision(state, iterations=1000):
+def mcts_decision(state, iterations=80000):
     root = Node(state, player="O")
     for _ in range(iterations):
         node = root
