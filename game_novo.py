@@ -1,5 +1,5 @@
-from connected_four import ConnectState
-from mcts import MCTS
+from connected_four_novo import ConnectState
+from mcts_novo import MCTS
 
 
 def play_player_vs_ai():
@@ -26,7 +26,7 @@ def play_player_vs_ai():
 
         print("Thinking...")
 
-        mcts.search(8)
+        mcts.search(10)
         num_rollouts, run_time = mcts.statistics()
         print("Statistics: ", num_rollouts, "rollouts in", run_time, "seconds")
         move = mcts.best_move()
@@ -75,10 +75,10 @@ def play_ai_vs_ai():
         print("Pensando...")
 
         if state.to_play == 1:
-            mcts1.search(1)
+            mcts1.search(10)
             move = mcts1.best_move()
         else:
-            mcts2.search(1)
+            mcts2.search(10)
             move = mcts2.best_move()
 
         print(f"MCTS ({'X' if state.to_play == 1 else 'O'}) escolheu a jogada: {move}")

@@ -10,7 +10,7 @@ class GameMeta:
 
 
 class MCTSMeta:
-    EXPLORATION = math.sqrt(2)
+    EXPLORATION = 1
 
 
 class ConnectState:
