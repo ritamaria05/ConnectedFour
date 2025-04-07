@@ -1,6 +1,7 @@
 import math
 import random
 from connected_four import create_board, is_valid, drop_piece, check_win, switch_player, is_draw, ROW_COUNT, COLUMN_COUNT
+import numpy as np
 
 class Node:
     def __init__(self, state, parent=None, move=None, player="O"):
@@ -21,7 +22,7 @@ class Node:
                 drop_piece(new_state, row, col, self.player)
                 moves.append((col, new_state))
         return moves
-
+    # check if the node has expandable children
     def is_fully_expanded(self):
         return len(self.children) == len(self.get_possible_moves())
 
@@ -53,25 +54,39 @@ class Node:
 
     def simulate(self):
         simulation_state = [row[:] for row in self.state]
-        current_player = self.player
+        current_player = switch_player(self.player)
+
         while True:
             possible_moves = [col for col in range(COLUMN_COUNT) if is_valid(simulation_state, col)]
             if not possible_moves:
                 return 0
+
+            # Verifica se há jogada vencedora imediata
+            for col in possible_moves:
+                temp_state = [row[:] for row in simulation_state]
+                row = next(r for r in range(ROW_COUNT) if temp_state[r][col] == 0)
+                drop_piece(temp_state, row, col, current_player)
+                if check_win(temp_state, current_player):
+                    return 1 if current_player == "O" else -1
+
+            # Jogada aleatória se não há vitória imediata
             col = random.choice(possible_moves)
             row = next(r for r in range(ROW_COUNT) if simulation_state[r][col] == 0)
             drop_piece(simulation_state, row, col, current_player)
+
             if check_win(simulation_state, current_player):
                 return 1 if current_player == "O" else -1
+
             current_player = switch_player(current_player)
+
 
     def backpropagate(self, reward):
         self.visits += 1
         self.value += reward
         if self.parent:
-            self.parent.backpropagate(reward)
+            self.parent.backpropagate(-reward)
 
-def mcts_decision(state, iterations=80000):
+def mcts_decision(state, iterations=50000):
     root = Node(state, player="O")
     for _ in range(iterations):
         node = root
