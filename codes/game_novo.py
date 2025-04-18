@@ -1,5 +1,5 @@
-from connected_four_novo import ConnectState
-from mcts_novo import MCTS
+from codes.connected_four_novo import ConnectState
+from codes.mcts_novo import MCTS
 
 
 def play_player_vs_ai():

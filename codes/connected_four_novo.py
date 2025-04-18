@@ -24,6 +24,9 @@ class ConnectState:
         return deepcopy(self.board)
 
     def move(self, col):
+        # Verifica se a coluna está cheia
+        if self.height[col] < 0:
+            raise ValueError(f"Coluna {col} já está cheia!")  # Ou apenas retorna False ou trata o erro de forma apropriada
         self.board[self.height[col]][col] = self.to_play
         self.last_played = [self.height[col], col]
         self.height[col] -= 1
