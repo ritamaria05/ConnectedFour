@@ -96,6 +96,12 @@ def play_ai_vs_ai():
     else:
         print("Empate!")
 
+def play_user_vs_tree():
+#usar arvore + novos exemplos (classify), predict move function
+
+def play_tree_vs_tree():
+
+
 if __name__ == "__main__":
     print("Escolha um modo de jogo: \n 1: Jogador vs Jogador \n 2: Jogador vs Computador \n 3: Computador vs Computador \n")
     mode = int(input("Modo: "))
@@ -103,8 +109,8 @@ if __name__ == "__main__":
         play_player_vs_player()
 
     elif mode==2:
-        play_player_vs_ai()
+        play_player_vs_ai() #user vs tree
     
     elif mode==3:
-        play_ai_vs_ai()
+        play_ai_vs_ai()#tree vs tree
 
