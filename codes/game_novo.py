@@ -80,7 +80,7 @@ def play_player_vs_ai(player_piece, first):
             mcts.move(mv)
         else:
             print("Computador pensando...")
-            mcts.search(10)
+            mcts.search(5)
             mv = mcts.best_move()
             print(f"MCTS ({'X' if ai_piece==1 else 'O'}) escolheu: {mv}")
             state.move(mv)
@@ -100,10 +100,10 @@ def play_ai_vs_ai(starting_player):
         print(f"IA {current_ai} a pensar...")
         # Execução MCTS conforme a peça
         if state.to_play == 1:
-            mcts1.search(10)
+            mcts1.search(5)
             mv = mcts1.best_move()
         else:
-            mcts2.search(10)
+            mcts2.search(5)
             mv = mcts2.best_move()
         # Mostra a jogada escolhida
         print(f"IA {current_ai} escolheu a coluna: {mv}")

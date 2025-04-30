@@ -3,14 +3,14 @@ import numpy as np
 from mcts_novo import MCTS
 from connected_four_novo import ConnectState, GameMeta, MCTSMeta
 
-def generate_mcts_dataset(num_games=700):
+def generate_mcts_dataset(num_games=1500):
     dataset = []
 
     for game_idx in range(num_games):
         print(f"\n🎮 Jogo {game_idx + 1} de {num_games}")
         state = ConnectState()
         mcts = MCTS(state)
-        mcts.search(time_limit=0.5)  # mais tempo por jogada
+        mcts.search(time_limit=3)  # mais tempo por jogada
 
         while not state.game_over():
             legal_moves = state.get_legal_moves()
@@ -28,7 +28,7 @@ def generate_mcts_dataset(num_games=700):
                 mcts.move(move)
 
                 if not state.game_over():
-                    mcts.search(time_limit=0.5)
+                    mcts.search(time_limit=3)
 
             except ValueError as e:
                 print(f"[Erro] Movimento inválido: {e}")
@@ -51,6 +51,6 @@ def save_dataset(dataset, filename='mcts_dataset.csv'):
 
 # Geração e salvamento
 if __name__ == "__main__":
-    dataset = generate_mcts_dataset(num_games=700)
+    dataset = generate_mcts_dataset(num_games=1500)
     save_dataset(dataset)
     print(f"\n✅ Dataset final salvo com {len(dataset)} exemplos!")
