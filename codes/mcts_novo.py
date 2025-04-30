@@ -109,7 +109,6 @@ class MCTS:
         return state.get_outcome()
 
     def back_propagate(self, node: Node, turn: int, outcome: int) -> None:
-
         # For the current player, not the next player
         reward = 0 if outcome == turn else 1
 

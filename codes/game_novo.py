@@ -1,364 +1,194 @@
-from connected_four_novo import ConnectState  # Importa a classe que representa o estado do jogo
-from mcts_novo import MCTS  # Importa a classe que implementa o algoritmo MCTS (Monte Carlo Tree Search)
+from connected_four_novo import ConnectState  # Representa o estado do jogo
+from mcts_novo import MCTS                   # Implementa o algoritmo MCTS
 
-# Define exceções específicas para controlo de fluxo: reiniciar ou terminar o jogo
+# Exceções específicas para controlo de fluxo
+
 class RestartGameException(Exception):
     pass
 
 class QuitGameException(Exception):
     pass
 
-# Função que tenta ler um número inteiro do utilizador de forma segura
+
+# Leitura de inteiro seguro
 def safe_int_input(prompt):
-    try:
-        return int(input(prompt))  # Tenta converter o input para inteiro
-    except EOFError:
-        raise EOFError  # Permite o utilizador terminar com Ctrl+D
-    except ValueError:
-        # Se o input não for um número inteiro válido
-        print("Entrada inválida. Por favor insira um número inteiro.")
-        return safe_int_input(prompt)  # Repete até o utilizador inserir corretamente
-        
+    while True:
+        try:
+            value = input(prompt)
+            if value.lower() == 'restart':
+                raise RestartGameException
+            if value.lower() == 'quit':
+                raise QuitGameException
+            return int(value)
+        except ValueError:
+            print("Entrada inválida. Por favor insira um número inteiro.")
+        except EOFError:
+            raise
 
-# Função que lê input e verifica se o utilizador quer reiniciar ou sair do jogo
-def safe_input_with_restart_or_quit(prompt):
-    user_input = input(prompt)
-    if user_input.lower() == 'restart':
-        raise RestartGameException("Jogo reiniciado pelo utilizador.")  # Atira exceção para reiniciar
-    elif user_input.lower() == 'quit':
-        raise QuitGameException("Jogo encerrado pelo utilizador.")  # Atira exceção para sair
-    return user_input  # Retorna input normal se for válido
-
-
-# Função principal para Jogador vs Computador
-def play_player_vs_ai():
-    state = ConnectState()  # Inicializa o tabuleiro de jogo vazio
-    mcts = MCTS(state)      # Inicializa o MCTS baseado no estado atual
-
-    while not state.game_over():  # Continua enquanto o jogo não terminar
-        print("Current state:")
-        state.print()  # Mostra o tabuleiro
-
-        # Jogador humano faz a jogada
-        user_move = int(input("Enter a move: "))
-        while user_move not in state.get_legal_moves():  # Garante jogada válida
-            print("Illegal move")
-            user_move = int(input("Enter a move: "))
-
-        # Aplica a jogada do humano no estado
-        state.move(user_move)
-        mcts.move(user_move)  # Atualiza também a árvore do MCTS
-        state.print()  # Mostra tabuleiro após jogada
-
-        if state.game_over():  # Verifica se alguém ganhou ou houve empate
-            print("Player one won!")
-            break
-
-        print("Thinking...")  # Computador pensa...
-
-        # O computador usa MCTS para procurar o melhor movimento
-        mcts.search(10)  # Faz 10 iterações de pesquisa MCTS
-        num_rollouts, run_time = mcts.statistics()  # Mostra estatísticas de pesquisa
-        print("Statistics: ", num_rollouts, "rollouts in", run_time, "seconds")
-        move = mcts.best_move()  # Escolhe o melhor movimento encontrado
-
-        print("MCTS chose move: ", move)
-
-        state.move(move)  # Computador joga
-        mcts.move(move)   # Atualiza árvore do MCTS
-
-        if state.game_over():
-            print("Player two won!")  # Se o computador ganhar
-            break
-
-# Função principal para Jogador vs Jogador
-def play_player_vs_player():
-    state = ConnectState()  # Novo jogo
-
-    while not state.game_over():
-        print("Estado atual do jogo:")
-        state.print()
-
-        print(f"Jogador {'1 (X)' if state.to_play == 1 else '2 (O)'}:")  # Indica quem joga
-        move = int(input("Escolha uma coluna (0-6): "))
-        while move not in state.get_legal_moves():  # Verifica jogada válida
+# Leitura de jogada com reinício/saída
+def safe_move_input(state, prompt="Escolha uma coluna (0-6), 'restart' ou 'quit': "):
+    while True:
+        try:
+            user_input = input(prompt)
+            if user_input.lower() == 'restart':
+                raise RestartGameException
+            if user_input.lower() == 'quit':
+                raise QuitGameException
+            move = int(user_input)
+            if move in state.get_legal_moves():
+                return move
             print("Movimento inválido. Tente novamente.")
-            move = int(input("Escolha uma coluna (0-6): "))
+        except ValueError:
+            print("Entrada inválida. Insira um número de 0 a 6.")
+        except EOFError:
+            raise
 
-        state.move(move)  # Aplica a jogada
+# Funções de jogo com retorno de resultado
 
-    state.print()  # Mostra o tabuleiro final
-    outcome = state.get_outcome()  # Verifica vencedor ou empate
-    if outcome == 1:
-        print("Jogador 1 venceu!")
-    elif outcome == 2:
-        print("Jogador 2 venceu!")
-    else:
-        print("Empate!")
-
-# Função para Computador vs Computador
-def play_ai_vs_ai():
+def play_player_vs_player(starting_player):
     state = ConnectState()
-    mcts1 = MCTS(state)  # MCTS para o primeiro jogador
-    mcts2 = MCTS(state)  # MCTS para o segundo jogador
-
+    state.to_play = starting_player
     while not state.game_over():
-        print("Estado atual:")
         state.print()
-        print("Pensando...")
+        print(f"Vez de {'X' if state.to_play==1 else 'O'}")
+        move = safe_move_input(state)
+        state.move(move)
+    state.print()
+    return state.get_outcome()
 
-        # IA joga consoante o turno atual
+
+def play_player_vs_ai(player_piece, first):
+    state = ConnectState()
+    ai_piece = 2 if player_piece == 1 else 1
+    mcts = MCTS(state)
+    if first == 'ai':
+        state.to_play = ai_piece
+        state.print()
+        print("Computador começando...")
+        mcts.search(10)
+        mv = mcts.best_move()
+        print(f"MCTS ({'X' if ai_piece==1 else 'O'}) escolheu: {mv}")
+        state.move(mv)
+        mcts.move(mv)
+    else:
+        state.to_play = player_piece
+    while not state.game_over():
+        state.print()
+        if state.to_play == player_piece:
+            mv = safe_move_input(state)
+            state.move(mv)
+            mcts.move(mv)
+        else:
+            print("Computador pensando...")
+            mcts.search(10)
+            mv = mcts.best_move()
+            print(f"MCTS ({'X' if ai_piece==1 else 'O'}) escolheu: {mv}")
+            state.move(mv)
+            mcts.move(mv)
+    state.print()
+    return state.get_outcome()
+
+
+def play_ai_vs_ai(starting_player):
+    state = ConnectState()
+    state.to_play = starting_player
+    mcts1, mcts2 = MCTS(state), MCTS(state)
+    while not state.game_over():
+        state.print()
+        # Indica qual IA está a jogar
+        current_ai = 'X' if state.to_play == 1 else 'O'
+        print(f"IA {current_ai} a pensar...")
+        # Execução MCTS conforme a peça
         if state.to_play == 1:
             mcts1.search(10)
-            move = mcts1.best_move()
+            mv = mcts1.best_move()
         else:
             mcts2.search(10)
-            move = mcts2.best_move()
-
-        print(f"MCTS ({'X' if state.to_play == 1 else 'O'}) escolheu a jogada: {move}")
-
-        state.move(move)  # Aplica jogada
-        mcts1.move(move)  # Atualiza árvore do MCTS para IA 1
-        mcts2.move(move)  # Atualiza árvore do MCTS para IA 2
-
+            mv = mcts2.best_move()
+        # Mostra a jogada escolhida
+        print(f"IA {current_ai} escolheu a coluna: {mv}")
+        # Aplica a jogada e atualiza ambas as árvores
+        state.move(mv)
+        mcts1.move(mv)
+        mcts2.move(mv)
     state.print()
-    outcome = state.get_outcome()
-    if outcome == 1:
-        print("Jogador 1 (IA) venceu!")
-    elif outcome == 2:
-        print("Jogador 2 (IA) venceu!")
-    else:
-        print("Empate!")
+    return state.get_outcome()
 
-# Repete a função de input seguro (deve ser corrigido depois para evitar duplicação)
-def safe_input_with_restart_or_quit(prompt):
-    user_input = input(prompt)
-    if user_input.lower() == 'restart':
-        raise RestartGameException("Jogo reiniciado pelo utilizador.")
-    elif user_input.lower() == 'quit':
-        raise QuitGameException("Jogo encerrado pelo utilizador.")
-    return user_input
+# Menu pós-jogo: Play Again, Change Modes, Quit
+def post_game_menu():
+    print("O que deseja fazer a seguir?")
+    print("1: Jogar novamente")
+    print("2: Mudar modo")
+    print("3: Sair")
+    choice = safe_int_input("Escolha: ")
+    if choice == 1:
+        return 'again'
+    if choice == 2:
+        raise RestartGameException
+    return 'quit'
 
-# --- Bloco principal de execução ---
-if __name__ == "__main__":
-    x_wins = 0  # Contador de vitórias do jogador X
-    o_wins = 0  # Contador de vitórias do jogador O
-    draws = 0   # Contador de empates
+# Bloco principal
 
-    # Pergunta ao utilizador qual modo de jogo deseja
-    print("Escolha um modo de jogo: \n 1: Jogador vs Jogador \n 2: Jogador vs Computador \n 3: Computador vs Computador \n")
+def main():
+    x_wins = o_wins = draws = 0
     try:
-        mode = safe_int_input("Modo: ")
-    except EOFError:
-        print("\nEntrada finalizada. Programa encerrado.")
-        exit()
-
-    # Se escolher modo Jogador vs Jogador ou Jogador vs IA
-    if mode in [1, 2]:
-        try:
-            while True:
-                try:
-                    print("\nQuem começa? (1: X, 2: O)")
-                    first_player = safe_int_input("Escolha: ")
-                    while first_player not in [1, 2]:  # Garante escolha válida
-                        print("Escolha inválida.")
-                        first_player = safe_int_input("Escolha (1: X, 2: O): ")
-                except EOFError:
-                    print("\nEntrada finalizada. Programa encerrado.")
-                    break
-
-                state = ConnectState()  # Novo estado para novo jogo
-                if first_player == 2:
-                    state.to_play = 2  # Define jogador O a começar
-
-                if mode == 1:
-                    # Jogador vs Jogador
-                    while not state.game_over():
-                        print("Estado atual do jogo:")
-                        state.print()
-                        print(f"Jogador {'1 (X)' if state.to_play == 1 else '2 (O)'}:")
-                        try:
-                            move = safe_input_with_restart_or_quit(
-                                "Escolha uma coluna (0-6), 'restart' para reiniciar o jogo ou 'quit' para encerrar o jogo: "
-                            )
-                            if move.lower() == 'restart':
-                                raise RestartGameException
-                            elif move.lower() == 'quit':
-                                raise QuitGameException
-                            elif not move.isdigit():
-                                raise ValueError("Entrada inválida. Insira um número de 0 a 6.")
-                                move = int(move)
-                            move = int(move)
-                        except RestartGameException:
-                            print("\nReiniciando o jogo...\n")
-                            break
-                        except QuitGameException:
-                            print("\nSaindo do jogo...")
-                            print(f'\nResultado final: "X" {x_wins}-{o_wins} "O" (Empates: {draws})\n')
-                            exit()
-                        except EOFError:
-                            print("\nEntrada finalizada. Jogo interrompido.")
-                            break
-                        col = int(move)
-                        while move not in state.get_legal_moves():
-                            print("Movimento inválido. Tente novamente.")
-                            try:
-                                move = safe_input_with_restart_or_quit(
-                                    "Escolha uma coluna (0-6), 'restart' para reiniciar ou 'quit' para sair: "
-                                )
-                                if move.lower() == 'restart':
-                                    raise RestartGameException
-                                elif move.lower() == 'quit':
-                                    raise QuitGameException
-                                move = int(move)
-                            except RestartGameException:
-                                print("\nReiniciando o jogo...\n")
-                                break
-                            except QuitGameException:
-                                print("\nSaindo do jogo...")
-                                print(f'\nResultado final: "X" {x_wins}-{o_wins} "O" (Empates: {draws})\n')
-                                exit()
-                            except EOFError:
-                                print("\nEntrada finalizada. Jogo interrompido.")
-                                break
-                        state.move(move)
-                        state.print()
-
-                elif mode == 2:
-                    # Jogador vs Computador
-                    mcts = MCTS(state)
-                    if first_player == 2:
-                        print("Computador começa...")
-                        mcts.search(8)  # Computador pensa
-                        move = mcts.best_move()
-                        print(f"MCTS (X) escolheu: {move}")
-                        state.move(move)
-                        mcts.move(move)
-                        state.print()
-
-                    try: 
-                        while not state.game_over():
-                            print("Estado atual do jogo:")
-                            state.print()
-                            while True:
-                                user_move = safe_input_with_restart_or_quit(
-                                    "Escolha uma coluna (0-6), 'restart' ou 'quit': "
-                                )
-                                if user_move.lower() == 'restart':
-                                    raise RestartGameException
-                                elif user_move.lower() == 'quit':
-                                    raise QuitGameException
-                                try:
-                                    col = int(user_move)
-                                except ValueError:
-                                    print("Entrada inválida. Insira um número de 0 a 6.")
-                                    continue
-                                except QuitGameException:
-                                    print("\nSaindo do jogo...")
-                                    print(f'\nResultado final: "X" {x_wins}-{o_wins} "O" (Empates: {draws})\n')
-                                    exit()
-                                except EOFError:
-                                    print("\nEntrada finalizada. Jogo interrompido.")
-                                    break
-                                col = int(user_move)
-                                while user_move not in state.get_legal_moves():
-                                    print("Movimento inválido. Tente novamente.")
-                                    try:
-                                        user_move = safe_input_with_restart_or_quit(
-                                            "Escolha uma coluna (0-6), 'restart' ou 'quit': "
-                                        )
-                                        if user_move.lower() == 'restart':
-                                            raise RestartGameException
-                                        elif user_move.lower() == 'quit':
-                                            raise QuitGameException
-                                        user_move = int(user_move)
-                                    except RestartGameException:
-                                        print("\nReiniciando o jogo...\n")
-                                        break
-                                    except QuitGameException:
-                                        print("\nSaindo do jogo...")
-                                        print(f'\nResultado final: "X" {x_wins}-{o_wins} "O" (Empates: {draws})\n')
-                                        exit()
-                                    except EOFError:
-                                        print("\nEntrada finalizada. Jogo interrompido.")
-                                        break
-
-                                state.move(user_move)
-                                mcts.move(user_move)
-                                state.print()
-
-                                if state.game_over():
-                                    break
-
-                                print("Computador a pensar...")
-                                mcts.search(8)
-                                move = mcts.best_move()
-                                print(f"MCTS (O) escolheu: {move}")
-                                state.move(move)
-                                mcts.move(move)
-                                state.print()
-                    except RestartGameException:
-                                print("\nReiniciando o jogo...\n")
-                                break
-
-                if state.game_over():
-                    outcome = state.get_outcome()
-                    if outcome == 1:
-                        x_wins += 1
-                        print('"X" venceu!')
-                    elif outcome == 2:
-                        o_wins += 1
-                        print('"O" venceu!')
-                    else:
-                        draws += 1
-                        print("Empate!")
-
-                    print(f'\nResultado atual: "X" {x_wins}-{o_wins} "O" (Empates: {draws})\n')
-
-        except QuitGameException:
-            print("\nSaindo do jogo...")
-            print(f'\nResultado final: "X" {x_wins}-{o_wins} "O" (Empates: {draws})\n')
-        except EOFError:
-            print("\nFim dos jogos.")
-
-    elif mode == 3:
-        # Computador vs Computador
-        try:
-            num_games = safe_int_input("Quantos jogos deseja que a IA jogue? ")
-        except EOFError:
-            print("\nEntrada finalizada. Programa encerrado.")
-            exit()
-
-        for i in range(num_games):
-            print(f"\n=== Jogo {i+1} ===")
-            state = ConnectState()
-            mcts1 = MCTS(state)
-            mcts2 = MCTS(state)
-
-            while not state.game_over():
-                state.print()
-                print("IA a pensar...")
-                if state.to_play == 1:
-                    mcts1.search(10)
-                    move = mcts1.best_move()
-                else:
-                    mcts2.search(10)
-                    move = mcts2.best_move()
-                print(f"Jogador {'1 (X)' if state.to_play == 1 else '2 (O)'} escolheu: {move}")
-                state.move(move)
-                mcts1.move(move)
-                mcts2.move(move)
-
-            state.print()
-            outcome = state.get_outcome()
-            if outcome == 1:
-                x_wins += 1
-                print("Jogador 1 (IA - X) venceu!")
-            elif outcome == 2:
-                o_wins += 1
-                print("Jogador 2 (IA - O) venceu!")
+        while True:
+            print("1: Jogador vs Jogador\n2: Jogador vs AI\n3: AI vs AI")
+            mode = safe_int_input("Modo: ")
+            # Definições iniciais do modo
+            if mode == 1:
+                print("Quem começa? \n1: X  \n2: O")
+                first = 1 if safe_int_input("Escolha: ")==1 else 2
+                while True:
+                    outcome = play_player_vs_player(first)
+                    if outcome == 1: x_wins += 1
+                    elif outcome == 2: o_wins += 1
+                    else: draws += 1
+                    print(f"Placar: (X) {x_wins} - {o_wins} (O) (Empates: {draws})")
+                    action = post_game_menu()
+                    if action == 'again':
+                        continue
+                    elif action == 'quit':
+                        raise QuitGameException
+            elif mode == 2:
+                print("Quem começa? \n1: Jogador  \n2: AI")
+                first = 'player' if safe_int_input("Escolha: ")==1 else 'ai'
+                print("Que peça preferes? \n1: X  \n2: O")
+                piece = 1 if safe_int_input("Escolha: ")==1 else 2
+                while True:
+                    outcome = play_player_vs_ai(piece, first)
+                    if outcome == piece: x_wins += 1
+                    elif outcome != piece: o_wins += 1
+                    print(f"Placar: (Jogador) {x_wins if piece==1 else o_wins} - {o_wins if piece==1 else x_wins} (AI)")
+                    action = post_game_menu()
+                    if action == 'again':
+                        continue
+                    elif action == 'quit':
+                        raise QuitGameException
+            elif mode == 3:
+                print("Quem começa? \n1: X  \n2: O")
+                first = 1 if safe_int_input("Escolha: ")==1 else 2
+                while True:
+                    outcome = play_ai_vs_ai(first)
+                    if outcome == 1: x_wins += 1
+                    elif outcome == 2: o_wins += 1
+                    else: draws += 1
+                    print(f"Placar: (X) {x_wins} - {o_wins} (O) (Empates: {draws})")
+                    action = post_game_menu()
+                    if action == 'again':
+                        continue
+                    elif action == 'quit':
+                        raise QuitGameException
             else:
-                draws += 1
-                print("Empate!")
+                print("Modo inválido.")
+    except RestartGameException:
+        print("Mudando modo...")
+        main()
+    except QuitGameException:
+        print("Programa encerrado.")
+    except EOFError:
+        print("Entrada finalizada.")
 
-            print(f'Resultado atual: "X" {x_wins}-{o_wins} "O" (Empates: {draws})\n')
+if __name__ == "__main__":
+    main()
+# Este código implementa um jogo de Conecta 4 com várias opções de modo de jogo.
