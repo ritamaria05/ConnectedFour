@@ -10,7 +10,7 @@ class GameMeta:
 
 
 class MCTSMeta:
-    EXPLORATION = 1
+    EXPLORATION = 1.4
 
 
 class ConnectState:

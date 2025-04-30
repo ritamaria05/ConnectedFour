@@ -18,12 +18,24 @@ class Node:
     def add_children(self, children: dict) -> None:
         for child in children:
             self.children[child.move] = child
+    
+    def get_exploration(self) -> float:
+        # compute a dynamic exploration constant c based on the number of visits
+        #base exploration constant
+        c0 = MCTSMeta.EXPLORATION #1.4
+        if self.parent is not None:
+            root_visits = self.parent.N 
+            alpha = 0.2
+            return c0 / (1 +  alpha * math.log(1 + root_visits))
+        #decrease c -> more exploitation (attack)
+        #increase c -> more exploration (defense)
 
     def value(self, explore: float = MCTSMeta.EXPLORATION):
         if self.N == 0:
-            return 0 if explore == 0 else GameMeta.INF
-        else:
-            return self.Q / self.N + explore * math.sqrt(math.log(self.parent.N) / self.N)
+            return GameMeta.INF
+        else: #dynamic c
+            c_now = self.get_exploration()
+            return self.Q / self.N + c_now * math.sqrt(math.log(self.parent.N) / self.N)
 
 
 class MCTS:
@@ -66,7 +78,33 @@ class MCTS:
 
     def roll_out(self, state: ConnectState) -> int:
         while not state.game_over():
-            state.move(random.choice(state.get_legal_moves()))
+            moves = state.get_legal_moves()
+            player = state.to_play
+            opp = 3 - player
+            # Immediate win check
+            for m in moves:
+                s2 = deepcopy(state)
+                s2.move(m)
+                if s2.game_over() and s2.get_outcome() == player:
+                    state.move(m)
+                    break
+            else:
+                #Immediate threat blocking
+                blocked = False
+                for m in moves:
+                    s2 = deepcopy(state)
+                    s2.move(m)
+                    for m2 in s2.get_legal_moves():
+                        s3 = deepcopy(s2)
+                        s3.move(m2)
+                        if s3.game_over() and s3.get_outcome() == opp:
+                            state.move(m)
+                            blocked = True
+                            break
+                    if blocked:
+                        break
+                if not blocked:
+                    state.move(random.choice(moves))
 
         return state.get_outcome()
 

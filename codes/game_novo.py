@@ -18,6 +18,7 @@ def safe_int_input(prompt):
         # Se o input não for um número inteiro válido
         print("Entrada inválida. Por favor insira um número inteiro.")
         return safe_int_input(prompt)  # Repete até o utilizador inserir corretamente
+        
 
 # Função que lê input e verifica se o utilizador quer reiniciar ou sair do jogo
 def safe_input_with_restart_or_quit(prompt):
@@ -27,6 +28,7 @@ def safe_input_with_restart_or_quit(prompt):
     elif user_input.lower() == 'quit':
         raise QuitGameException("Jogo encerrado pelo utilizador.")  # Atira exceção para sair
     return user_input  # Retorna input normal se for válido
+
 
 # Função principal para Jogador vs Computador
 def play_player_vs_ai():
@@ -183,6 +185,9 @@ if __name__ == "__main__":
                                 raise RestartGameException
                             elif move.lower() == 'quit':
                                 raise QuitGameException
+                            elif not move.isdigit():
+                                raise ValueError("Entrada inválida. Insira um número de 0 a 6.")
+                                move = int(move)
                             move = int(move)
                         except RestartGameException:
                             print("\nReiniciando o jogo...\n")
@@ -194,6 +199,7 @@ if __name__ == "__main__":
                         except EOFError:
                             print("\nEntrada finalizada. Jogo interrompido.")
                             break
+                        col = int(move)
                         while move not in state.get_legal_moves():
                             print("Movimento inválido. Tente novamente.")
                             try:
@@ -230,33 +236,11 @@ if __name__ == "__main__":
                         mcts.move(move)
                         state.print()
 
-                    while not state.game_over():
-                        print("Estado atual do jogo:")
-                        state.print()
-
-                        try:
-                            user_move = safe_input_with_restart_or_quit(
-                                "Escolha uma coluna (0-6), 'restart' ou 'quit': "
-                            )
-                            if user_move.lower() == 'restart':
-                                raise RestartGameException
-                            elif user_move.lower() == 'quit':
-                                raise QuitGameException
-                            user_move = int(user_move)
-                        except RestartGameException:
-                            print("\nReiniciando o jogo...\n")
-                            break
-                        except QuitGameException:
-                            print("\nSaindo do jogo...")
-                            print(f'\nResultado final: "X" {x_wins}-{o_wins} "O" (Empates: {draws})\n')
-                            exit()
-                        except EOFError:
-                            print("\nEntrada finalizada. Jogo interrompido.")
-                            break
-
-                        while user_move not in state.get_legal_moves():
-                            print("Movimento inválido. Tente novamente.")
-                            try:
+                    try: 
+                        while not state.game_over():
+                            print("Estado atual do jogo:")
+                            state.print()
+                            while True:
                                 user_move = safe_input_with_restart_or_quit(
                                     "Escolha uma coluna (0-6), 'restart' ou 'quit': "
                                 )
@@ -264,32 +248,58 @@ if __name__ == "__main__":
                                     raise RestartGameException
                                 elif user_move.lower() == 'quit':
                                     raise QuitGameException
-                                user_move = int(user_move)
-                            except RestartGameException:
+                                try:
+                                    col = int(user_move)
+                                except ValueError:
+                                    print("Entrada inválida. Insira um número de 0 a 6.")
+                                    continue
+                                except QuitGameException:
+                                    print("\nSaindo do jogo...")
+                                    print(f'\nResultado final: "X" {x_wins}-{o_wins} "O" (Empates: {draws})\n')
+                                    exit()
+                                except EOFError:
+                                    print("\nEntrada finalizada. Jogo interrompido.")
+                                    break
+                                col = int(user_move)
+                                while user_move not in state.get_legal_moves():
+                                    print("Movimento inválido. Tente novamente.")
+                                    try:
+                                        user_move = safe_input_with_restart_or_quit(
+                                            "Escolha uma coluna (0-6), 'restart' ou 'quit': "
+                                        )
+                                        if user_move.lower() == 'restart':
+                                            raise RestartGameException
+                                        elif user_move.lower() == 'quit':
+                                            raise QuitGameException
+                                        user_move = int(user_move)
+                                    except RestartGameException:
+                                        print("\nReiniciando o jogo...\n")
+                                        break
+                                    except QuitGameException:
+                                        print("\nSaindo do jogo...")
+                                        print(f'\nResultado final: "X" {x_wins}-{o_wins} "O" (Empates: {draws})\n')
+                                        exit()
+                                    except EOFError:
+                                        print("\nEntrada finalizada. Jogo interrompido.")
+                                        break
+
+                                state.move(user_move)
+                                mcts.move(user_move)
+                                state.print()
+
+                                if state.game_over():
+                                    break
+
+                                print("Computador a pensar...")
+                                mcts.search(8)
+                                move = mcts.best_move()
+                                print(f"MCTS (O) escolheu: {move}")
+                                state.move(move)
+                                mcts.move(move)
+                                state.print()
+                    except RestartGameException:
                                 print("\nReiniciando o jogo...\n")
                                 break
-                            except QuitGameException:
-                                print("\nSaindo do jogo...")
-                                print(f'\nResultado final: "X" {x_wins}-{o_wins} "O" (Empates: {draws})\n')
-                                exit()
-                            except EOFError:
-                                print("\nEntrada finalizada. Jogo interrompido.")
-                                break
-
-                        state.move(user_move)
-                        mcts.move(user_move)
-                        state.print()
-
-                        if state.game_over():
-                            break
-
-                        print("Computador a pensar...")
-                        mcts.search(8)
-                        move = mcts.best_move()
-                        print(f"MCTS (O) escolheu: {move}")
-                        state.move(move)
-                        mcts.move(move)
-                        state.print()
 
                 if state.game_over():
                     outcome = state.get_outcome()
