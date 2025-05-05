@@ -3,7 +3,7 @@ import time
 import math
 from copy import deepcopy
 
-from connected_four_novo import ConnectState, GameMeta, MCTSMeta
+from connected_four import ConnectState, GameMeta, MCTSMeta
 
 
 class Node:

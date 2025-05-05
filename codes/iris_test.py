@@ -1,45 +1,62 @@
-# lê o iris.csv
 import pandas as pd
+import pickle
+from decision_tree_builder import id3, predict, Node
+
+# --- Load and discretize the Iris dataset ---
+
 df = pd.read_csv('iris.csv')
 
-# discretiza os dados numéricos (transforma números em categorias)
-# divisão entre valores baixos, médios e altos
-def discretize(coluna, n_bins=3):
-    return pd.cut(coluna, bins=n_bins, labels=[f'bin{i}' for i in range(n_bins)])
+def discretize(col, n_bins=3):
+    return pd.cut(col, bins=n_bins, labels=[f'bin{i}' for i in range(n_bins)])
 
-for col in df.columns[:-1]:  # Ignora a última coluna (rótulo)
+for col in df.columns[:-1]:
     df[col] = discretize(df[col])
 
-#converter dataFram em para lista de listas
-examples = df.values.tolist()
-features = list(range(len(examples[0]) - 1))  # Índices das colunas, exceto a última
+# --- Prepare features and labels ---
+X = df.iloc[:, :-1]
+y = df.iloc[:, -1]
+features = X.columns.tolist()
 
-#treina a árvore
-from decision_tree_builder import id3
-tree = id3(examples, features)
+# --- Train-test split (70% train / 30% test) ---
+df_shuffled = df.sample(frac=1).reset_index(drop=True)
+split_idx = int(len(df_shuffled) * 0.7)
+train = df_shuffled.iloc[:split_idx].reset_index(drop=True)
+test = df_shuffled.iloc[split_idx:].reset_index(drop=True)
 
-#função para classificação de novos exemplos
-def classify(tree, example):
-    while not tree.is_leaf():
-        feature_value = example[tree.feature]
-        if feature_value in tree.children:
-            tree = tree.children[feature_value]
-        else:
-            return None  # Valor desconhecido
-    return tree.label
+X_train, y_train = train.iloc[:, :-1], train.iloc[:, -1]
+X_test, y_test = test.iloc[:, :-1], test.iloc[:, -1]
 
-# avaliar árvore
-# divide dados manualmente (70% treino / 30% teste)
-# compara rótulo previsto com rótulo real, calcula acurácia
-import random
-random.shuffle(examples)
-split_point = int(len(examples) * 0.7)
-train_examples = examples[:split_point]
-test_examples = examples[split_point:]
+# --- Train the decision tree ---
+tree = id3(X_train, y_train, features)
 
+# --- Serialize the decision tree to disk with pickle ---
+with open('iris_tree.pkl', 'wb') as f:
+    pickle.dump(tree, f)
+print("Decision tree serialized to iris_tree.pkl")
+
+# --- Function to print the tree structure ---
+def print_tree(node: Node, depth=0):
+    indent = '  ' * depth
+    if node.label is not None:
+        print(f"{indent}→ Label: {node.label}")
+    else:
+        feat_name = features[node.feature] if isinstance(node.feature, int) else node.feature
+        print(f"{indent}Feature: {feat_name}")
+        for value, child in node.children.items():
+            print(f"{indent}  If == {value}:")
+            print_tree(child, depth+2)
+
+# --- Display the decision tree structure ---
+print("\nDecision Tree Structure:")
+print_tree(tree)
+
+# --- Evaluate accuracy on test set ---
 correct = 0
-for e in test_examples:
-    if classify(tree, e) == e[-1]:
+for idx, row in X_test.iterrows():
+    sample = row.to_dict()
+    pred = predict(tree, sample)
+    true_label = y_test.loc[idx]
+    if pred == true_label:
         correct += 1
-#cálculo acurácia
-print("Acurácia:", correct / len(test_examples))
+accuracy = correct / len(X_test)
+print(f"\nAccuracy: {accuracy:.2%}")

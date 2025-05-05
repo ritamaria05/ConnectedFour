@@ -1,7 +1,7 @@
 import random
 import numpy as np
-from mcts_novo import MCTS
-from connected_four_novo import ConnectState, GameMeta, MCTSMeta
+from mcts import MCTS
+from connected_four import ConnectState, GameMeta, MCTSMeta
 
 def generate_mcts_dataset(num_games=1000):
     dataset = []

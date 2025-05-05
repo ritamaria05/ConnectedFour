@@ -1,7 +1,8 @@
-from connected_four_novo import ConnectState, GameMeta  # Representa o estado do jogo
-from mcts_novo import MCTS                   # Implementa o algoritmo MCTS
+from connected_four import ConnectState, GameMeta  # Representa o estado do jogo
+from mcts import MCTS                   # Implementa o algoritmo MCTS
 import pickle
 from decision_tree_builder import predict  # Importa a função de previsão da árvore de decisão
+
 # Exceções específicas para controlo de fluxo
 
 class RestartGameException(Exception):
