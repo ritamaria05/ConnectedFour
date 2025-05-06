@@ -26,7 +26,10 @@ ConnectedFour/
 │   ├── generate_dataset.py   ← Gerador de dataset para treinar a árvore de decisão
 |   ├── iris.csv              ← dataset de treino
 |   ├── iris_tree.pkl         ← árvore de decisão treinada pelo dataset iris.csv
-│   └── iris_test.py          ← Treino auxiliar de árvores de decisão usando dataset iris.csv      
+│   └── iris_test.py          ← Treino auxiliar de árvores de decisão usando dataset iris.csv
+├── gráficos/                 ← gráficos auxiliares para a análise de resultados (notebook)
+|   ├── acuraciaxprofundidade.png ← Relação entre acurácia e profundidade do ID3
+|   └── impactoAlpha.png      ← Impacto do alpha na taxa de vitória e tempo médio de decisão do MCTS
 ├── .gitignore
 └── README.md                 ← Este ficheiro
 ```
