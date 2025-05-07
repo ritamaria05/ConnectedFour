@@ -18,6 +18,7 @@ ConnectedFour/
 ├── codes/                    ← Código-fonte e notebooks
 |   ├── gráficos/             ← gráficos auxiliares para a análise de resultados (notebook)
 |        ├── acuraciaxprofundidade.png ← Relação entre acurácia e profundidade do ID3
+|        ├── numeroJogadas.png ← gráfico com análise do número de jogadas em cada coluna usando o mcts_dataset.csv
 |        └── impactoAlpha.png      ← Impacto do alpha na taxa de vitória e tempo médio de decisão do MCTS
 |   ├── connected_four.py     ← Regras do jogo e representação do tabuleiro
 │   ├── ConnectFour.ipynb     ← Notebook principal (interface, visualizações, testes)
