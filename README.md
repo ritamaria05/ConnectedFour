@@ -16,6 +16,9 @@ ConnectedFour/
 ├── Enunciado/            ← Enunciado ou especificação do trabalho (PDF ou Markdown)
     |── enunciado_IA.pdf
 ├── codes/                    ← Código-fonte e notebooks
+|   ├── gráficos/             ← gráficos auxiliares para a análise de resultados (notebook)
+|        ├── acuraciaxprofundidade.png ← Relação entre acurácia e profundidade do ID3
+|        └── impactoAlpha.png      ← Impacto do alpha na taxa de vitória e tempo médio de decisão do MCTS
 |   ├── connected_four.py     ← Regras do jogo e representação do tabuleiro
 │   ├── ConnectFour.ipynb     ← Notebook principal (interface, visualizações, testes)
 │   ├── game.py               ← Jogo final com menus auxiliares, exceções para erros e uso de MCTS e Árvore
@@ -27,9 +30,6 @@ ConnectedFour/
 |   ├── iris.csv              ← dataset de treino
 |   ├── iris_tree.pkl         ← árvore de decisão treinada pelo dataset iris.csv
 │   └── iris_test.py          ← Treino auxiliar de árvores de decisão usando dataset iris.csv
-├── gráficos/                 ← gráficos auxiliares para a análise de resultados (notebook)
-|   ├── acuraciaxprofundidade.png ← Relação entre acurácia e profundidade do ID3
-|   └── impactoAlpha.png      ← Impacto do alpha na taxa de vitória e tempo médio de decisão do MCTS
 ├── .gitignore
 └── README.md                 ← Este ficheiro
 ```
