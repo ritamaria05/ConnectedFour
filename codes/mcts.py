@@ -27,6 +27,7 @@ class Node:
             root_visits = self.parent.N 
             alpha = 0.2
             return c0 / (1 +  alpha * math.log(1 + root_visits))
+        return c0
         #decrease c -> more exploitation (attack)
         #increase c -> more exploration (defense)
 
